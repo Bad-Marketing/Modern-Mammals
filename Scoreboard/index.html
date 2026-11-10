@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modern Mammals Performance Scoreboard</title>
+<link rel="icon" href="favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F1B2A; --navy2:#1B2D45; --paper:#F5F3EE; --sand:#EDEAE1; --white:#FFFFFF;
+    --ink:#16191E; --bone:#F2F4F6; --muted:#57606C; --dim:#9AA3AE; --line:#D6D1C2;
+    --orange:#F67A1C; --soft:#FDEEDF; --blue:#1273C8; --pale:#E8F1FA; --lime:#C6F432;
+    /* status (semantic only, darkened for AA on light surfaces) */
+    --green:#1F7A45; --green-bg:#E3F2E8; --amber:#8A6510; --amber-bg:#FBF0D6; --red:#B42318; --red-bg:#FBE4E2;
+    --display:Gabarito,"Arial Black",sans-serif;
+    --body:Figtree,Arial,sans-serif;
+    --mono:"IBM Plex Mono",monospace;
+    --radius:20px; --pill:999px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;scroll-padding-top:76px;}
+  body{font:17px/1.55 var(--body);background:var(--paper);color:var(--ink);overflow-x:hidden;}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--navy);border-bottom:1px solid rgba(242,244,246,.12);height:64px;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;}
+  .nav-brand{font-family:var(--display);font-size:1.3rem;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:var(--bone);white-space:nowrap;}
+  .nav-brand span{font-family:var(--mono);font-size:.68rem;font-weight:600;letter-spacing:.14em;color:var(--dim);margin-left:.6rem;vertical-align:middle;}
+  .nav-links{display:flex;align-items:center;}
+  .nav-links a{padding:0 .7rem;line-height:64px;font-family:var(--mono);font-size:.7rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-decoration:none;transition:color .15s;white-space:nowrap;}
+  .nav-links a:hover{color:var(--bone);}
+  .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:4px;width:44px;height:44px;}
+  .hamburger span{display:block;width:22px;height:2px;background:var(--bone);}
+  .nav-mobile{display:none;position:fixed;top:64px;left:0;right:0;z-index:99;background:var(--navy);max-height:calc(100vh - 64px);overflow-y:auto;}
+  .nav-mobile.open{display:block;}
+  .nav-mobile a{display:block;padding:.95rem 22px;font-family:var(--mono);font-size:.8rem;font-weight:600;letter-spacing:.12em;color:var(--dim);text-decoration:none;text-transform:uppercase;border-bottom:1px solid rgba(242,244,246,.12);}
+
+  /* HERO (navy) */
+  #hero{background:var(--navy);color:var(--bone);padding:8.5rem 2rem 4.5rem;}
+  .hero-inner{max-width:1180px;margin:0 auto;}
+  .eyebrow{font:600 12px/1.5 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--blue);}
+  #hero .eyebrow{margin-bottom:1.5rem;}
+  .hero-title{font-family:var(--display);font-weight:900;text-transform:uppercase;line-height:.9;letter-spacing:-.05em;font-size:clamp(52px,7.3vw,112px);max-width:15ch;}
+  .hero-title .lime{color:var(--lime);}
+  .hero-desc{font-size:1.06rem;line-height:1.6;color:var(--bone);margin:1.75rem 0 2.75rem;max-width:62ch;}
+  .stat-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;border-top:1px solid rgba(242,244,246,.12);padding-top:2rem;}
+  .record-stat b{display:block;font:800 clamp(30px,3vw,44px)/1 var(--display);letter-spacing:-.04em;color:var(--bone);}
+  .record-stat:first-child b{color:var(--orange);}
+  .record-stat small{display:block;margin-top:10px;font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
+  .record-stat .stat-value{font:700 1.15rem/1.3 var(--display);color:var(--bone);min-height:44px;display:flex;align-items:center;}
+  .conn-banner{display:none;margin-top:2rem;background:var(--navy2);border:1px solid rgba(242,244,246,.12);border-left:4px solid var(--red);border-radius:8px;padding:.85rem 1.1rem;font-size:.92rem;line-height:1.5;color:var(--bone);}
+  .conn-banner.show{display:block;}
+
+  /* SECTIONS (paper) */
+  .content{max-width:1180px;margin:0 auto;padding:0 2rem;}
+  .section{padding:4.5rem 0 .5rem;}
+  .section:nth-child(even){background:var(--sand);padding-bottom:4rem;}
+  .section-header{margin-bottom:1.75rem;}
+  .section-num{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.75rem;}
+  .section-title{font-family:var(--display);font-weight:800;text-transform:uppercase;line-height:.97;letter-spacing:-.045em;font-size:clamp(30px,3.4vw,48px);color:var(--ink);max-width:22ch;}
+  .section-title .accent{color:var(--orange);}
+  .section-answers{font:600 12px/1.6 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-top:.9rem;}
+  .section.primary .section-header{border-left:4px solid var(--orange);padding-left:1.5rem;}
+  .section.primary .section-title{font-size:clamp(40px,5.1vw,76px);}
+  .group-label{font-family:var(--display);font-size:1.5rem;font-weight:700;color:var(--ink);margin:2rem 0 .35rem;}
+  .group-hint{font-size:.95rem;color:var(--muted);margin-bottom:1rem;max-width:75ch;}
+  .metric-list{display:flex;flex-direction:column;gap:1rem;}
+
+  /* METRIC CARD */
+  .m-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem 1.75rem 1.75rem;}
+  .m-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;}
+  .m-name{font-family:var(--display);font-size:1.3rem;font-weight:700;line-height:1.25;color:var(--ink);}
+  .section.primary .m-card .m-name{font-size:1.5rem;}
+  .m-note{font-size:.92rem;color:var(--muted);line-height:1.5;margin-top:.35rem;}
+  .m-tags{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.6rem;}
+  .m-tag{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:.35rem .7rem;border-radius:12px;}
+  .m-tag.target{background:var(--soft);color:var(--ink);}
+  .m-tag.impl{background:var(--pale);color:var(--blue);}
+  .m-controls{display:flex;gap:.5rem;flex-shrink:0;}
+  .tk-icon-btn{position:relative;background:var(--white);border:1px solid var(--line);border-radius:8px;width:44px;height:44px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .15s;}
+  .tk-icon-btn:hover{border-color:var(--ink);color:var(--ink);}
+  .tk-icon-btn.has-comments{color:var(--ink);}
+  .tk-badge{position:absolute;top:-7px;right:-7px;background:var(--orange);color:var(--navy);font:700 .66rem var(--body);border-radius:8px;min-width:18px;height:18px;padding:0 4px;display:flex;align-items:center;justify-content:center;line-height:1;}
+
+  select.tk-status-select{width:100%;display:block;text-align:center;text-align-last:center;min-height:44px;padding:.6rem 1rem;border:1px solid var(--line);border-radius:999px;font:700 .92rem var(--body);cursor:pointer;appearance:none;-webkit-appearance:none;background:var(--paper);color:var(--muted);margin-bottom:1.1rem;}
+  .tk-status-select.st-not-yet-tracking,.tk-status-select.st-not-started,.tk-status-select.st-not-proceeding{background:var(--paper);color:var(--muted);}
+  .tk-status-select.st-improving,.tk-status-select.st-on-track,.tk-status-select.st-complete{background:var(--green-bg);color:var(--green);border-color:#B7DCC4;}
+  .tk-status-select.st-stable,.tk-status-select.st-at-risk,.tk-status-select.st-in-progress{background:var(--amber-bg);color:var(--amber);border-color:#EBD49A;}
+  .tk-status-select.st-declining,.tk-status-select.st-off-track{background:var(--red-bg);color:var(--red);border-color:#F1BBB6;}
+  .hero-status{margin-bottom:0;max-width:260px;}
+
+  .month-row,.month-edit-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;}
+  .month-edit-row{display:none;}
+  .m-card.editing .month-row{display:none;}
+  .m-card.editing .month-edit-row{display:grid;}
+  .m-card.editing .tk-edit-actions{display:flex;}
+  .month-cell{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem;min-width:0;}
+  .month-label{font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+  .month-label .base{color:var(--blue);}
+  .month-value{font:800 1.2rem/1.15 var(--display);letter-spacing:-.02em;color:var(--ink);word-break:break-word;}
+  .month-value.empty{font:400 .88rem var(--body);color:var(--muted);letter-spacing:0;}
+  .month-meta{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.45rem;}
+  .month-delta{font:600 11px var(--mono);letter-spacing:.06em;padding:.2rem .45rem;border-radius:6px;white-space:nowrap;}
+  .month-delta.up{background:var(--green-bg);color:var(--green);}
+  .month-delta.down{background:var(--red-bg);color:var(--red);}
+  .month-delta.flat{background:var(--amber-bg);color:var(--amber);}
+  .month-delta.neutral{background:var(--sand);color:var(--muted);}
+  .month-edit-row label{display:block;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;}
+  .month-edit-row input{width:100%;min-height:44px;padding:.55rem .7rem;border:1.5px solid var(--ink);border-radius:8px;font:400 1rem var(--body);background:var(--white);color:var(--ink);outline:none;}
+  .month-edit-row input:focus{border-color:var(--blue);}
+  .tk-edit-actions{display:none;gap:.6rem;margin-top:1rem;}
+  .tk-edit-save{min-height:44px;background:var(--orange);color:var(--navy);border:none;border-radius:999px;padding:.6rem 1.5rem;font:700 .95rem var(--body);cursor:pointer;transition:background .15s,color .15s;}
+  .tk-edit-save:hover{background:var(--ink);color:var(--white);}
+  .tk-edit-save:disabled{opacity:.5;cursor:default;}
+  .tk-edit-cancel{min-height:44px;background:transparent;color:var(--ink);border:1.5px solid currentColor;border-radius:999px;padding:.6rem 1.5rem;font:600 .95rem var(--body);cursor:pointer;}
+  .baseline-src{font-size:.86rem;color:var(--muted);margin-top:.8rem;line-height:1.5;}
+  .baseline-src strong{color:var(--blue);font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;}
+
+  /* IMPLEMENTATION / MILESTONE CARD */
+  .impl-overall{display:inline-block;font:600 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:.35rem .7rem;border-radius:12px;}
+  .impl-overall.st-not-started,.impl-overall.st-not-proceeding{background:var(--sand);color:var(--muted);}
+  .impl-overall.st-in-progress{background:var(--amber-bg);color:var(--amber);}
+  .impl-overall.st-complete{background:var(--green-bg);color:var(--green);}
+  .impl-rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.65rem;}
+  .impl-row{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:.8rem .9rem;}
+  .impl-row .month-label{margin-bottom:.55rem;}
+  .impl-row select.tk-status-select{margin-bottom:0;font-size:.85rem;padding:.5rem;}
+
+  /* COMMENTS */
+  .tk-comment-panel{display:none;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--line);}
+  .tk-comment-panel.open{display:block;}
+  .tk-comment-thread{margin-bottom:.8rem;display:flex;flex-direction:column;gap:.6rem;}
+  .tk-comment-item{border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:.7rem .95rem;background:var(--paper);}
+  .tk-comment-item-header{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:.25rem;margin-bottom:.25rem;}
+  .tk-comment-item-name{font-family:var(--display);font-weight:700;font-size:.95rem;}
+  .tk-comment-item-time{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .tk-comment-item-text{font-size:.95rem;line-height:1.55;}
+  .tk-no-comments{font-size:.92rem;color:var(--muted);margin-bottom:.8rem;}
+  .tk-comment-form textarea{width:100%;padding:.6rem .75rem;border:1px solid var(--line);border-radius:8px;font:400 .95rem var(--body);resize:vertical;outline:none;background:var(--white);color:var(--ink);display:block;margin-bottom:.55rem;min-height:56px;}
+  .tk-comment-form textarea:focus,.tk-comment-form input[type=text]:focus{border-color:var(--blue);}
+  .tk-comment-form-row{display:flex;gap:.55rem;align-items:center;flex-wrap:wrap;}
+  .tk-comment-form input[type=text]{flex:1;min-width:140px;min-height:44px;padding:.5rem .7rem;border:1px solid var(--line);border-radius:8px;font:400 .95rem var(--body);outline:none;background:var(--white);color:var(--ink);}
+  .tk-comment-post-btn{min-height:44px;background:var(--orange);color:var(--navy);border:none;border-radius:999px;padding:.55rem 1.4rem;font:700 .95rem var(--body);cursor:pointer;transition:background .15s,color .15s;}
+  .tk-comment-post-btn:hover{background:var(--ink);color:var(--white);}
+  .tk-comment-post-btn:disabled{opacity:.5;cursor:default;}
+  .tk-comment-status{font-size:.86rem;color:var(--muted);margin-top:.35rem;}
+
+  /* FOOTER (navy) */
+  footer{background:var(--navy);color:var(--bone);padding:5rem 2rem;margin-top:5rem;text-align:center;}
+  .ftr-mark{width:218px;max-width:100%;height:auto;margin:0 auto 1.5rem;display:block;}
+  .footer-claim{font-family:var(--display);font-size:clamp(28px,4vw,48px);font-weight:900;text-transform:uppercase;letter-spacing:-.045em;line-height:.95;color:var(--bone);margin-bottom:.9rem;}
+  .footer-label{font:600 12px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
+
+  @media(max-width:960px){
+    .nav-links{display:none;}
+    .hamburger{display:flex;}
+    nav{padding:0 22px;}
+    .content{padding:0 22px;}
+    #hero{padding:7rem 22px 3.5rem;}
+    footer{padding:4rem 22px;}
+  }
+  @media(max-width:860px){
+    .month-row,.month-edit-row,.m-card.editing .month-edit-row{grid-template-columns:1fr;}
+    .impl-rows{grid-template-columns:1fr;}
+    .stat-bar{grid-template-columns:1fr;gap:1.5rem;}
+    .m-card{padding:1.25rem;}
+    .hero-title{font-size:clamp(36px,10.5vw,60px);}
+    .section.primary .section-title{font-size:clamp(32px,9vw,48px);}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">Modern Mammals<span>Scoreboard</span></div>
+  <div class="nav-links" id="navLinks"></div>
+  <button class="hamburger" onclick="toggleMenu()" aria-label="Menu"><span></span><span></span><span></span></button>
+</nav>
+<div class="nav-mobile" id="navMobile"></div>
+
+<section id="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">For The Record · Amazon Growth Strategy</div>
+    <h1 class="hero-title">Modern Mammals performance <span class="lime">scoreboard</span></h1>
+    <p class="hero-desc">Monthly tracking against the Modern Mammals Amazon Growth Strategy, from the October 2026 baseline through January 2027. The objective is to build Amazon into an independent customer acquisition channel, on the path to $2M in annual Amazon sales.</p>
+    <div class="stat-bar">
+      <div class="record-stat"><b>$2M</b><small>Annual Amazon revenue objective</small></div>
+      <div class="record-stat"><div class="stat-value" id="lastUpdated">Loading…</div><small>Last updated</small></div>
+      <div class="record-stat"><select class="tk-status-select hero-status" id="heroStatus"></select><small>Overall status</small></div>
+    </div>
+    <div class="conn-banner" id="connBanner">Not connected to the shared database. Values shown are the strategy baselines only, and changes won't save until the page is hosted at its live URL.</div>
+  </div>
+</section>
+
+<main id="sectionsRoot"></main>
+
+<footer>
+  <svg class="ftr-mark" viewBox="0 0 8215.72 788.72" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="FTR"><g fill="#F2F4F6"><path d="M162 244V401H441V244ZM213 0H51V681H489V524H152L213 595Z" transform="translate(-10.14 734.86) scale(1 -1)"/><path d="M18 340Q18 418 43.0 482.5Q68 547 114.5 594.5Q161 642 225.5 668.0Q290 694 367 694Q444 694 508.5 668.0Q573 642 620.0 594.5Q667 547 692.0 482.5Q717 418 717 340Q717 263 692.0 198.0Q667 133 620.0 85.5Q573 38 508.5 12.5Q444 -13 367 -13Q290 -13 225.5 12.5Q161 38 114.5 85.5Q68 133 43.0 198.0Q18 263 18 340ZM183 340Q183 280 206.5 236.5Q230 193 272.0 170.0Q314 147 367 147Q422 147 463.0 170.0Q504 193 528.0 237.0Q552 281 552 341Q552 401 528.0 444.0Q504 487 463.0 510.5Q422 534 367 534Q314 534 272.0 510.5Q230 487 206.5 443.5Q183 400 183 340Z" transform="translate(500.86 734.86) scale(1 -1)"/><path d="M51 0V681H303Q377 681 436.0 652.5Q495 624 530.0 569.5Q565 515 565 438Q565 360 530.0 306.0Q495 252 436.0 224.0Q377 196 303 196H176V352H294Q345 352 372.5 374.0Q400 396 400 438Q400 480 372.5 502.0Q345 524 294 524H175L213 559V0ZM395 0 255 275H432L572 0Z" transform="translate(1234.86 734.86) scale(1 -1)"/><path d="M207 0V614H370V0ZM9 524V681H570V524Z" transform="translate(2087.86 734.86) scale(1 -1)"/><path d="M457 0V681H620V0ZM51 0V681H213V0ZM156 255V412H513V255Z" transform="translate(2667.86 734.86) scale(1 -1)"/><path d="M155 264V418H437V264ZM152 527 213 595V80L147 155H491V0H51V681H491V527Z" transform="translate(3338.86 734.86) scale(1 -1)"/><path d="M51 0V681H303Q377 681 436.0 652.5Q495 624 530.0 569.5Q565 515 565 438Q565 360 530.0 306.0Q495 252 436.0 224.0Q377 196 303 196H176V352H294Q345 352 372.5 374.0Q400 396 400 438Q400 480 372.5 502.0Q345 524 294 524H175L213 559V0ZM395 0 255 275H432L572 0Z" transform="translate(4127.86 734.86) scale(1 -1)"/><path d="M155 264V418H437V264ZM152 527 213 595V80L147 155H491V0H51V681H491V527Z" transform="translate(4720.86 734.86) scale(1 -1)"/><path d="M365 -13Q258 -13 180.0 32.0Q102 77 60.0 156.5Q18 236 18 340Q18 418 43.0 482.5Q68 547 114.0 594.5Q160 642 224.0 667.5Q288 693 365 693Q485 693 564.0 639.5Q643 586 681 484L536 425Q507 481 466.0 508.5Q425 536 365 536Q312 536 271.0 512.0Q230 488 206.5 444.0Q183 400 183 340Q183 280 206.5 236.0Q230 192 271.0 168.5Q312 145 365 145Q425 145 466.0 172.0Q507 199 536 255L681 196Q643 94 564.0 40.5Q485 -13 365 -13Z" transform="translate(5249.86 734.86) scale(1 -1)"/><path d="M18 340Q18 418 43.0 482.5Q68 547 114.5 594.5Q161 642 225.5 668.0Q290 694 367 694Q444 694 508.5 668.0Q573 642 620.0 594.5Q667 547 692.0 482.5Q717 418 717 340Q717 263 692.0 198.0Q667 133 620.0 85.5Q573 38 508.5 12.5Q444 -13 367 -13Q290 -13 225.5 12.5Q161 38 114.5 85.5Q68 133 43.0 198.0Q18 263 18 340ZM183 340Q183 280 206.5 236.5Q230 193 272.0 170.0Q314 147 367 147Q422 147 463.0 170.0Q504 193 528.0 237.0Q552 281 552 341Q552 401 528.0 444.0Q504 487 463.0 510.5Q422 534 367 534Q314 534 272.0 510.5Q230 487 206.5 443.5Q183 400 183 340Z" transform="translate(5940.86 734.86) scale(1 -1)"/><path d="M51 0V681H303Q377 681 436.0 652.5Q495 624 530.0 569.5Q565 515 565 438Q565 360 530.0 306.0Q495 252 436.0 224.0Q377 196 303 196H176V352H294Q345 352 372.5 374.0Q400 396 400 438Q400 480 372.5 502.0Q345 524 294 524H175L213 559V0ZM395 0 255 275H432L572 0Z" transform="translate(6674.86 734.86) scale(1 -1)"/><path d="M51 0V681H294Q402 681 479.0 640.5Q556 600 597.0 524.0Q638 448 638 341Q638 233 596.5 157.0Q555 81 478.0 40.5Q401 0 293 0ZM213 90 146 157H282Q340 157 382.5 175.5Q425 194 448.5 235.0Q472 276 472 341Q472 405 449.0 445.5Q426 486 383.5 505.0Q341 524 283 524H139L213 569Z" transform="translate(7267.86 734.86) scale(1 -1)"/></g><g fill="#F67A1C"><path d="M142 -12Q113 -12 88.0 3.0Q63 18 48.5 43.0Q34 68 34 97Q34 127 48.5 151.5Q63 176 88.0 191.0Q113 206 142 206Q174 206 198.5 191.0Q223 176 237.5 151.5Q252 127 252 97Q252 68 237.5 43.0Q223 18 198.5 3.0Q174 -12 142 -12ZM142 300Q113 300 88.0 315.0Q63 330 48.5 355.0Q34 380 34 409Q34 439 48.5 463.5Q63 488 88.0 503.0Q113 518 142 518Q174 518 198.5 503.0Q223 488 237.5 463.5Q252 439 252 409Q252 380 237.5 355.0Q223 330 198.5 315.0Q174 300 142 300Z" transform="translate(7922.86 734.86) scale(1 -1)"/></g></svg>
+  <div class="footer-claim">Your brand. Our Amazon team.</div>
+  <div class="footer-label">Amazon growth for established DTC &amp; CPG brands</div>
+</footer>
+
+<script>
+/* ============================================================
+   SUPABASE: shared FTR project (same one the Modern Mammals
+   strategy site uses). Own DOC_PREFIX so events never collide.
+   ============================================================ */
+const SUPABASE_URL='https://zbcqdcwibbuyfmytfngn.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpiY3FkY3dpYmJ1eWZteXRmbmduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTgyNTEsImV4cCI6MjA5Nzg3NDI1MX0.gXJna_dG08OVNyQy6VyakhJ7ays93ibLlWCDrS6W1RM';
+const DOC_PREFIX='modern-mammals-scoreboard-2026';
+
+/* ============================================================
+   TRACKING PERIOD
+   ============================================================ */
+const MONTHS=[
+  {key:'oct26', label:'Oct 2026', baseline:true},
+  {key:'nov26', label:'Nov 2026'},
+  {key:'dec26', label:'Dec 2026'},
+  {key:'jan27', label:'Jan 2027'},
+];
+
+const METRIC_STATUS=['Not Yet Tracking','Improving','Stable','Declining'];
+const TEST_STATUS=['Not Started','In Progress','Complete'];
+const IMPL_STATUS=['Not Started','In Progress','Complete'];
+const LAUNCH_STATUS=['Not Started','In Progress','Complete','Not Proceeding'];
+const HERO_STATUS=['On Track','At Risk','Off Track'];
+
+const LISTING_PARTS=[
+  {key:'seo',   label:'Listing Copy & SEO'},
+  {key:'main',  label:'Main Image'},
+  {key:'stack', label:'Image Stack & Video'},
+  {key:'aplus', label:'Premium A+ Content'},
+];
+
+const RANK_HINT='Organic search position for the keyword. Lower is better. Enter "Not ranked" when outside the tracked range.';
+
+/* ============================================================
+   METRICS: fixed to the agreed list. No targets set (none are
+   defined in the strategy). Baselines only where the strategy
+   states a figure; every other cell starts blank.
+   ============================================================ */
+const SECTIONS=[
+  { key:'business', nav:'Business', primary:true,
+    title:'Overall Business Performance',
+    answers:'Are we on the path to $2M a year? · Is growth efficient?',
+    groups:[{ items:[
+      { id:'revenue', label:'Total Amazon Revenue', dir:'up',
+        tag:'Long-term goal: $2M annual Amazon revenue',
+        note:'Pre-engagement reference from the strategy: ~$36.5K in September 2026, down from ~$87K in March.' },
+      { id:'orders', label:'Total Orders', dir:'up' },
+      { id:'sessions', label:'Total Sessions', dir:'up',
+        note:'Sessions declined approximately 80% from March to September 2026, alongside the reduction in advertising.' },
+      { id:'cvr', label:'Unit Session Percentage (CVR)', dir:'up',
+        note:'The current high unit-session percentage is influenced by repeat and subscription orders and should not be treated as a baseline for new-customer acquisition.' },
+      { id:'tacos', label:'TACOS', dir:'down',
+        note:'Read alongside Total Amazon Revenue so efficiency doesn\'t look better just because spend was cut.' },
+    ]}]},
+  { key:'acquisition', nav:'Acquisition',
+    title:'Customer Acquisition &amp; <span class="accent">Non-Branded Growth</span>',
+    answers:'Is Amazon bringing in new customers on its own? · Are we winning non-branded search?',
+    groups:[
+      { label:'New-to-brand customers',
+        hint:'Enter only from Amazon Ads new-to-brand reporting. Use "N/A" where reporting does not support it; do not estimate.',
+        items:[
+          { id:'ntb-orders', label:'New-to-Brand Orders', dir:'up' },
+          { id:'ntb-pct', label:'New-to-Brand % of Orders', dir:'up' },
+        ]},
+      { label:'Non-branded search share',
+        hint:'Brand share across the priority non-branded search queries for each product, from Search Query Performance. At strategy time, approximately 98% of purchases in Amazon\'s search data came from branded searches.',
+        items:[
+          { id:'nb-ps-mud', label:'Non-Branded Search Query Purchase Share: Magic Mud', dir:'up' },
+          { id:'nb-ps-bar', label:'Non-Branded Search Query Purchase Share: Light Bar', dir:'up' },
+          { id:'nb-cs-mud', label:'Non-Branded Search Query Click Share: Magic Mud', dir:'up' },
+          { id:'nb-cs-bar', label:'Non-Branded Search Query Click Share: Light Bar', dir:'up' },
+        ]},
+      { label:'Organic ranking: Magic Mud priority keywords',
+        hint:RANK_HINT+' Keywords from the strategy\'s conventional hair-care search opportunity.',
+        items:[
+          { id:'rk-mud-2in1', label:'"men\'s shampoo and conditioner 2-in-1"', dir:'down', note:'~10.1K monthly searches.' },
+          { id:'rk-mud-cowash', label:'"co-wash"', dir:'down', note:'~6.4K monthly searches.' },
+          { id:'rk-mud-dryscalp', label:'"dry scalp shampoo for men"', dir:'down', note:'~791 monthly searches.' },
+          { id:'rk-mud-mens', label:'"men\'s shampoo"', dir:'down', note:'Broader men\'s shampoo searches, ~100.7K monthly. Tested selectively.' },
+        ]},
+      { label:'Organic ranking: Light Bar priority keywords',
+        hint:RANK_HINT+' Keywords from the strategy\'s shampoo-bar category opportunity.',
+        items:[
+          { id:'rk-bar-shampoobar', label:'"shampoo bar"', dir:'down', note:'~81.6K monthly searches.' },
+          { id:'rk-bar-barshampoo', label:'"bar shampoo"', dir:'down', note:'~22.1K monthly searches.' },
+          { id:'rk-bar-barsc', label:'"bar shampoo and conditioner"', dir:'down', note:'~13.3K monthly searches.' },
+          { id:'rk-bar-scbar', label:'"shampoo and conditioner bar"', dir:'down', note:'~7.5K monthly searches.' },
+        ]},
+      { label:'Non-branded advertising',
+        items:[
+          { id:'nb-ppc-sales', label:'Non-Branded PPC Sales', dir:'up',
+            note:'Excludes Brand Defense campaigns, so branded demand doesn\'t inflate acquisition results.' },
+          { id:'nb-ppc-acos', label:'Non-Branded PPC ACOS', dir:'down',
+            note:'Higher acquisition costs are expected early while visibility, review volume and trust build. Read alongside Non-Branded PPC Sales.' },
+        ]},
+    ]},
+  { key:'listings', nav:'Listings',
+    title:'<span class="accent">Growth Area 2:</span> Listing Optimization &amp; Conversion',
+    answers:'Are the listings fully optimized? · Are they converting unfamiliar shoppers?',
+    groups:[
+      { label:'Implementation status', impl:true,
+        hint:'Work completed, not performance. Set each component as it ships.',
+        items:[
+          { id:'impl-mud', type:'impl', label:'Listing Optimization: Magic Mud', parts:LISTING_PARTS, statuses:IMPL_STATUS },
+          { id:'impl-bar', type:'impl', label:'Listing Optimization: Light Bar', parts:LISTING_PARTS, statuses:IMPL_STATUS },
+        ]},
+      { label:'Conversion & click-through',
+        items:[
+          { id:'cvr-mud', label:'Conversion Rate: Magic Mud', dir:'up' },
+          { id:'cvr-bar', label:'Conversion Rate: Light Bar', dir:'up' },
+          { id:'ctr-mud', label:'Search Query CTR, Priority Keywords: Magic Mud', dir:'up' },
+          { id:'ctr-bar', label:'Search Query CTR, Priority Keywords: Light Bar', dir:'up' },
+        ]},
+      { label:'Main-image A/B tests',
+        hint:'Planned after BFCM (Dec 2026 onward). Enter the month\'s result in words, e.g. "Variant B, +12% CTR".',
+        items:[
+          { id:'ab-mud', label:'A/B Test Results: Magic Mud 2-Pack Main Image', dir:'context', statuses:TEST_STATUS },
+          { id:'ab-bar', label:'A/B Test Results: Light Bar 2-Pack Main Image', dir:'context', statuses:TEST_STATUS },
+        ]},
+    ]},
+  { key:'catalog', nav:'Catalog',
+    title:'<span class="accent">Growth Area 1:</span> Catalog &amp; Offer Development',
+    answers:'Are the entry and replenishment offers live? · Which offers drive revenue?',
+    groups:[
+      { label:'Milestones', impl:true,
+        hint:'Use "Not Proceeding" for any step the team decides against after evaluation.',
+        items:[
+          { id:'ms-single', type:'impl', label:'Magic Mud Single (8oz) Launch', statuses:LAUNCH_STATUS,
+            note:'Entry offer for shoppers unfamiliar with the brand and hesitant to commit to the $68 2-pack. Proposed at $38.',
+            parts:[{key:'eval',label:'Feasibility & Pricing'},{key:'build',label:'Listing Built'},{key:'live',label:'Live on Amazon'}] },
+          { id:'ms-4pack', type:'impl', label:'Magic Mud 4-Pack (4 × 8oz) Launch', statuses:LAUNCH_STATUS,
+            note:'Replaces the replenishment role of the discontinued 32oz refill, which drove ~38% of April revenue.',
+            parts:[{key:'eval',label:'Availability Confirmed'},{key:'build',label:'Listing Built'},{key:'live',label:'Live on Amazon'}] },
+          { id:'ms-variation', type:'impl', label:'Catalog / Variation Optimization', statuses:LAUNCH_STATUS,
+            note:'Review the Magic Mud 2-pack and Magic Mud + Light Bar bundle relationship. The Light Bar variation family stays as is.',
+            parts:[{key:'audit',label:'Variation Audit'},{key:'decision',label:'Bundle Listing Decision'},{key:'done',label:'Changes Implemented'}] },
+        ]},
+      { label:'Revenue by product / offer',
+        hint:'Enter "N/A" for offers that are not live yet.',
+        items:[
+          { id:'rev-mud2', label:'Revenue: Magic Mud 2-Pack', dir:'up' },
+          { id:'rev-bundle', label:'Revenue: Magic Mud + Light Bar Bundle', dir:'up' },
+          { id:'rev-bar', label:'Revenue: Light Bar (variation family)', dir:'up' },
+          { id:'rev-single', label:'Revenue: Magic Mud Single', dir:'up' },
+          { id:'rev-4pack', label:'Revenue: Magic Mud 4-Pack', dir:'up' },
+        ]},
+    ]},
+  { key:'trust', nav:'Trust',
+    title:'<span class="accent">Growth Area 3:</span> Customer Trust &amp; Brand Awareness',
+    answers:'Is shopper trust building? · Are creators bringing in new audiences?',
+    groups:[{ items:[
+      { id:'rc-mud', label:'Review Count: Magic Mud', dir:'up',
+        note:'Strategy snapshot: 10 ratings at the time of writing.' },
+      { id:'rc-bar', label:'Review Count: Light Bar', dir:'up',
+        note:'Stronger existing review base than Magic Mud, but competing against bars with thousands of reviews.' },
+      { id:'stars', label:'Average Star Rating', dir:'up',
+        note:'Across the Magic Mud and Light Bar listings. Flag any product-level gap in comments.' },
+      { id:'cc-sales', label:'Creator Connections Sales', dir:'up' },
+      { id:'cc-content', label:'Creator Connections Content Published', dir:'up' },
+    ]}]},
+  { key:'sns', nav:'S&amp;S',
+    title:'<span class="accent">Growth Area 4:</span> Subscribe &amp; Save &amp; Retention',
+    answers:'Is recurring revenue building?',
+    groups:[{ items:[
+      { id:'subs', label:'Active Subscriptions', dir:'up',
+        note:'Strategy snapshot: ~133 enrolled subscriptions on the active catalog; discontinued products previously held another 134.' },
+      { id:'sns-revenue', label:'Subscribe &amp; Save Revenue', dir:'up' },
+      { id:'sns-share', label:'S&amp;S Revenue % of Total Revenue', dir:'context',
+        note:'Read alongside Total Amazon Revenue and New-to-Brand Orders: a rising share can also mean acquisition is slowing.' },
+    ]}]},
+];
+
+/* ============================================================
+   SHARED HELPERS
+   ============================================================ */
+function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function slug(s){ return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-'); }
+function isBlank(v){ return v==null || String(v).trim()===''; }
+function parseNum(raw){
+  if(isBlank(raw)) return NaN;
+  let s=String(raw).trim();
+  if(/^n\s*\/?\s*a$/i.test(s)) return NaN;
+  let mult=1;
+  s=s.replace(/[$,%~≈#\s]/g,'');
+  if(/k$/i.test(s)){ mult=1000; s=s.slice(0,-1); }
+  else if(/m$/i.test(s)){ mult=1000000; s=s.slice(0,-1); }
+  if(!/^-?\d*\.?\d+$/.test(s)) return NaN;
+  return parseFloat(s)*mult;
+}
+function formatDate(iso){
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+function deltaBadge(dir, prevRaw, curRaw){
+  if(isBlank(prevRaw) || isBlank(curRaw)) return '';
+  const prev=parseNum(prevRaw), cur=parseNum(curRaw);
+  if(isNaN(prev) || isNaN(cur)) return '';
+  const diff=cur-prev;
+  const pct=prev!==0 ? Math.abs(diff/prev*100).toFixed(0)+'%' : 'n/a';
+  const arrow=diff>0?'▲':diff<0?'▼':'▬';
+  let cls='neutral';
+  if(dir==='context'){ cls = diff===0 ? 'neutral' : 'flat'; }
+  else if(diff===0){ cls='neutral'; }
+  else { const good = dir==='up' ? diff>0 : diff<0; cls = good ? 'up' : 'down'; }
+  return `<span class="month-delta ${cls}">${arrow} ${pct}</span>`;
+}
+
+/* ============================================================
+   EVENT-SOURCED STORAGE (append-only)
+   ============================================================ */
+async function fetchEvents(){
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/comments?section_id=like.${DOC_PREFIX}~*&order=created_at.asc`,
+      { headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` } });
+    if(!r.ok) throw new Error('fetch failed');
+    return await r.json();
+  }catch(e){ console.error(e); return null; }
+}
+async function pushEvent(sectionKey, itemId, author, payload){
+  const section_id=`${DOC_PREFIX}~${sectionKey}~${itemId}`;
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/comments`,{
+    method:'POST',
+    headers:{ apikey:SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}`,
+              'Content-Type':'application/json', 'Prefer':'return=representation' },
+    body:JSON.stringify({ section_id, name:author||'Team', body:JSON.stringify(payload) })
+  });
+  if(!r.ok) throw new Error('save failed');
+  return await r.json();
+}
+function buildState(events, sectionKey, seedItems){
+  const items={};
+  seedItems.forEach(s=>{ items[s.id]={ id:s.id, fields:{...(s.seed||{})}, status:s.defaultStatus||'Not Yet Tracking', comments:[] }; });
+  (events||[]).forEach(ev=>{
+    const parts=ev.section_id.split('~');
+    if(parts[1]!==sectionKey) return;
+    const itemId=parts[2];
+    let payload; try{ payload=JSON.parse(ev.body); }catch(e){ return; }
+    if(!items[itemId]) return; // metric list is fixed: ignore unknown ids
+    if(payload.op==='upsert') items[itemId].fields={ ...items[itemId].fields, ...(payload.fields||{}) };
+    else if(payload.op==='status') items[itemId].status=payload.status;
+    else if(payload.op==='comment') items[itemId].comments.push({ name:ev.name, body:payload.text, created_at:ev.created_at });
+  });
+  return items;
+}
+
+let EVENTS=[];
+let CONNECTED=true;
+const openPanels=new Set();
+
+/* ============================================================
+   RENDERING
+   ============================================================ */
+const ICON_EDIT='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+const ICON_COMMENT='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+
+function optionsHTML(list, current){ return list.map(o=>`<option value="${o}" ${o===current?'selected':''}>${o}</option>`).join(''); }
+
+function commentPanelHTML(domId, comments){
+  const thread = comments.length===0
+    ? '<p class="tk-no-comments">No comments yet on this metric.</p>'
+    : comments.map(c=>`
+      <div class="tk-comment-item">
+        <div class="tk-comment-item-header">
+          <span class="tk-comment-item-name">${escHtml(c.name||'Anonymous')}</span>
+          <span class="tk-comment-item-time">${formatDate(c.created_at)}</span>
+        </div>
+        <p class="tk-comment-item-text">${escHtml(c.body)}</p>
+      </div>`).join('');
+  return `
+    <div class="tk-comment-panel ${openPanels.has(domId)?'open':''}" data-role="comment-panel">
+      <div class="tk-comment-thread">${thread}</div>
+      <div class="tk-comment-form">
+        <textarea rows="2" placeholder="Add a comment on this metric..." data-role="c-text"></textarea>
+        <div class="tk-comment-form-row">
+          <input type="text" placeholder="Your name (optional)" data-role="c-name">
+          <button class="tk-comment-post-btn" data-role="c-post">Post</button>
+        </div>
+        <div class="tk-comment-status" data-role="c-status"></div>
+      </div>
+    </div>`;
+}
+
+function controlsHTML(withEdit, count){
+  return `<div class="m-controls">
+    ${withEdit?`<button class="tk-icon-btn" data-role="edit-toggle" title="Edit values">${ICON_EDIT}</button>`:''}
+    <button class="tk-icon-btn ${count>0?'has-comments':''}" data-role="comment-toggle" title="Comments">${ICON_COMMENT}${count>0?`<span class="tk-badge">${count}</span>`:''}</button>
+  </div>`;
+}
+
+function renderMetricCard(sec, m, st){
+  const domId=`${sec.key}-${m.id}`;
+  const statuses=m.statuses||METRIC_STATUS;
+  const card=document.createElement('div');
+  card.className='m-card'; card.id='card-'+domId;
+  card.dataset.metric=m.id; card.dataset.dir=m.dir;
+  let prevVal=null;
+  const cells=MONTHS.map(mo=>{
+    const v=st.fields[mo.key];
+    let meta='';
+    if(!isBlank(v)){
+      if(prevVal!==null) meta+=deltaBadge(m.dir, prevVal, v);
+      prevVal=v;
+    }
+    return `<div class="month-cell" data-month="${mo.key}">
+      <div class="month-label">${mo.label}${mo.baseline?' · <span class="base">Baseline</span>':''}</div>
+      <div class="month-value ${isBlank(v)?'empty':''}">${isBlank(v)?'Not yet entered':escHtml(v)}</div>
+      ${meta?`<div class="month-meta">${meta}</div>`:''}
+    </div>`;
+  }).join('');
+  const inputs=MONTHS.map(mo=>`<div><label>${mo.label}${mo.baseline?' · Baseline':''}</label>
+    <input type="text" data-month="${mo.key}" value="${escHtml(st.fields[mo.key]||'')}"></div>`).join('');
+  card.innerHTML=`
+    <div class="m-head">
+      <div>
+        <div class="m-name">${m.label}</div>
+        ${m.note?`<div class="m-note">${m.note}</div>`:''}
+        ${m.tag?`<div class="m-tags"><span class="m-tag target">${escHtml(m.tag)}</span></div>`:''}
+      </div>
+      ${controlsHTML(true, st.comments.length)}
+    </div>
+    <select class="tk-status-select st-${slug(st.status)}" data-role="status">${optionsHTML(statuses, st.status)}</select>
+    <div class="month-row">${cells}</div>
+    <div class="month-edit-row">${inputs}</div>
+    <div class="tk-edit-actions">
+      <button class="tk-edit-save" data-role="edit-save">Save</button>
+      <button class="tk-edit-cancel" data-role="edit-cancel">Cancel</button>
+    </div>
+    ${m.source?`<div class="baseline-src"><strong>Baseline source</strong> · ${m.source}</div>`:''}
+    ${commentPanelHTML(domId, st.comments)}`;
+
+  card.querySelector('[data-role="edit-toggle"]').addEventListener('click',()=>{
+    card.classList.add('editing');
+    const first=card.querySelector('.month-edit-row input'); if(first) first.focus();
+  });
+  card.querySelector('[data-role="edit-cancel"]').addEventListener('click',()=>{
+    card.querySelectorAll('.month-edit-row input').forEach(i=>{ i.value=st.fields[i.dataset.month]||''; });
+    card.classList.remove('editing');
+  });
+  card.querySelector('[data-role="edit-save"]').addEventListener('click', async (e)=>{
+    const btn=e.currentTarget;
+    const fields={};
+    card.querySelectorAll('.month-edit-row input').forEach(i=>{
+      const nv=i.value.trim(); const ov=(st.fields[i.dataset.month]||'').trim();
+      if(nv!==ov) fields[i.dataset.month]=nv;
+    });
+    if(Object.keys(fields).length===0){ card.classList.remove('editing'); return; }
+    btn.disabled=true; btn.textContent='Saving…';
+    try{ await pushEvent(sec.key, m.id, 'Team', {op:'upsert', fields}); await reload(); }
+    catch(err){ alert('Could not save: check your connection and try again.'); btn.disabled=false; btn.textContent='Save'; }
+  });
+  wireStatus(card, sec.key, m.id);
+  wireComments(card, sec.key, m.id, domId);
+  return card;
+}
+
+function implOverall(fields, parts){
+  const vals=parts.map(p=>fields[p.key]||'Not Started');
+  if(vals.every(v=>v==='Not Proceeding')) return 'Not Proceeding';
+  if(vals.every(v=>v==='Complete'||v==='Not Proceeding')) return 'Complete';
+  if(vals.every(v=>v==='Not Started')) return 'Not Started';
+  return 'In Progress';
+}
+
+function renderImplCard(sec, m, st){
+  const domId=`${sec.key}-${m.id}`;
+  const parts=m.parts, statuses=m.statuses||IMPL_STATUS;
+  const card=document.createElement('div');
+  card.className='m-card impl-card'; card.id='card-'+domId;
+  const overall=implOverall(st.fields, parts);
+  const done=parts.filter(p=>st.fields[p.key]==='Complete').length;
+  card.innerHTML=`
+    <div class="m-head">
+      <div>
+        <div class="m-name">${m.label}</div>
+        ${m.note?`<div class="m-note">${m.note}</div>`:''}
+        <div class="m-tags">
+          <span class="m-tag impl">${sec.key==='catalog'?'Milestone':'Implementation'}</span>
+          <span class="impl-overall st-${slug(overall)}">${overall} · ${done}/${parts.length}</span>
+        </div>
+      </div>
+      ${controlsHTML(false, st.comments.length)}
+    </div>
+    <div class="impl-rows">
+      ${parts.map(p=>{ const v=st.fields[p.key]||'Not Started'; return `
+        <div class="impl-row">
+          <div class="month-label">${p.label}</div>
+          <select class="tk-status-select st-${slug(v)}" data-part="${p.key}">${optionsHTML(statuses, v)}</select>
+        </div>`; }).join('')}
+    </div>
+    ${commentPanelHTML(domId, st.comments)}`;
+  card.querySelectorAll('select[data-part]').forEach(sel=>{
+    sel.addEventListener('change', async (e)=>{
+      const v=e.target.value; sel.className='tk-status-select st-'+slug(v);
+      try{ await pushEvent(sec.key, m.id, 'Team', {op:'upsert', fields:{[sel.dataset.part]:v}}); }
+      catch(err){ alert('Could not save status: check your connection.'); }
+      await reload();
+    });
+  });
+  wireComments(card, sec.key, m.id, domId);
+  return card;
+}
+
+function wireStatus(card, secKey, itemId){
+  const sel=card.querySelector('[data-role="status"]');
+  sel.addEventListener('change', async (e)=>{
+    const v=e.target.value; sel.className='tk-status-select st-'+slug(v);
+    try{ await pushEvent(secKey, itemId, 'Team', {op:'status', status:v}); }
+    catch(err){ alert('Could not save status: check your connection.'); }
+    await reload();
+  });
+}
+
+function wireComments(card, secKey, itemId, domId){
+  const panel=card.querySelector('[data-role="comment-panel"]');
+  card.querySelector('[data-role="comment-toggle"]').addEventListener('click',()=>{
+    panel.classList.toggle('open');
+    if(panel.classList.contains('open')){ openPanels.add(domId); setTimeout(()=>panel.querySelector('textarea').focus(),50); }
+    else openPanels.delete(domId);
+  });
+  panel.querySelector('[data-role="c-post"]').addEventListener('click', async (e)=>{
+    const btn=e.currentTarget;
+    const txt=panel.querySelector('[data-role="c-text"]');
+    const nameEl=panel.querySelector('[data-role="c-name"]');
+    const status=panel.querySelector('[data-role="c-status"]');
+    const body=txt.value.trim();
+    if(!body){ status.textContent='Please write something first.'; status.style.color='var(--red)'; return; }
+    btn.disabled=true; status.textContent='Posting...'; status.style.color='var(--muted)';
+    try{
+      await pushEvent(secKey, itemId, nameEl.value.trim()||'Anonymous', {op:'comment', text:body});
+      openPanels.add(domId);
+      await reload();
+    }catch(err){
+      status.textContent='Failed to post. Please try again.'; status.style.color='var(--red)'; btn.disabled=false;
+    }
+  });
+}
+
+function renderNav(){
+  document.getElementById('navLinks').innerHTML=SECTIONS.map(s=>`<a href="#sec-${s.key}">${s.nav}</a>`).join('');
+  document.getElementById('navMobile').innerHTML=SECTIONS.map(s=>`<a href="#sec-${s.key}" onclick="toggleMenu()">${s.nav}</a>`).join('');
+}
+function toggleMenu(){ document.getElementById('navMobile').classList.toggle('open'); }
+
+function seedFor(item){
+  if(item.type==='impl') return {id:item.id, defaultStatus:'Not Started'};
+  return {id:item.id, seed:item.seed, defaultStatus:(item.statuses||METRIC_STATUS)[0]};
+}
+
+function renderAll(){
+  // Hero
+  const hero=buildState(EVENTS,'overview',[{id:'main', defaultStatus:'On Track'}]).main;
+  const hs=document.getElementById('heroStatus');
+  hs.innerHTML=optionsHTML(HERO_STATUS, hero.status);
+  hs.className='tk-status-select hero-status st-'+slug(hero.status);
+  const last=(EVENTS||[]).reduce((a,e)=> !a || e.created_at>a ? e.created_at : a, null);
+  document.getElementById('lastUpdated').textContent = last ? formatDate(last) : 'No updates yet';
+  document.getElementById('connBanner').classList.toggle('show', !CONNECTED);
+
+  // Sections
+  const root=document.getElementById('sectionsRoot');
+  root.innerHTML='';
+  SECTIONS.forEach((sec,idx)=>{
+    const allItems=sec.groups.flatMap(g=>g.items);
+    const state=buildState(EVENTS, sec.key, allItems.map(seedFor));
+    const el=document.createElement('div');
+    el.className='section'+(sec.primary?' primary':''); el.id='sec-'+sec.key;
+    el.innerHTML=`<div class="content">
+      <div class="section-header">
+        <div class="section-num">${String(idx+1).padStart(2,'0')} · ${sec.nav}</div>
+        <h2 class="section-title">${sec.title}</h2>
+        <div class="section-answers">Answers: ${sec.answers}</div>
+      </div><div data-role="groups"></div></div>`;
+    const groupsWrap=el.querySelector('[data-role="groups"]');
+    sec.groups.forEach(g=>{
+      if(g.label){
+        const h=document.createElement('div'); h.className='group-label'; h.textContent=g.label; groupsWrap.appendChild(h);
+        if(g.hint){ const p=document.createElement('p'); p.className='group-hint'; p.textContent=g.hint; groupsWrap.appendChild(p); }
+      }
+      const list=document.createElement('div'); list.className='metric-list';
+      g.items.forEach(m=>{
+        list.appendChild(m.type==='impl' ? renderImplCard(sec, m, state[m.id]) : renderMetricCard(sec, m, state[m.id]));
+      });
+      groupsWrap.appendChild(list);
+    });
+    root.appendChild(el);
+  });
+}
+
+async function reload(){
+  const ev=await fetchEvents();
+  if(ev===null){ CONNECTED=false; }
+  else { CONNECTED=true; EVENTS=ev; }
+  renderAll();
+}
+
+document.getElementById('heroStatus').addEventListener('change', async (e)=>{
+  const v=e.target.value; e.target.className='tk-status-select hero-status st-'+slug(v);
+  try{ await pushEvent('overview','main','Team',{op:'status', status:v}); }
+  catch(err){ alert('Could not save status: check your connection.'); }
+  await reload();
+});
+
+renderNav();
+renderAll();
+reload();
+</script>
+</body>
+</html>
